@@ -3,7 +3,12 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const period = process.env.PERIOD;
 
+setInterval(function() {
+    http.get("http://sg-voice-bot.herokuapp.com");
+}, 300000); // every 5 minutes (300000)
+
 http.createServer(function (request, response) {
+    response.send("Ok");
 }).listen(process.env.PORT || 5000);
 
 client.on('message', msg => {
