@@ -43,7 +43,12 @@ function someaction(channel) {
     var numUsers = updated.members.map(g => g.user).length;
     if ( numUsers == 0 ) {
         console.log("Removing " + channel.name);
-        channel.delete();
+        try {
+            channel.delete();
+        }
+        catch(err) {
+            console.log(err);
+        }
     } else { //Still a user in the channel
         setTimeout(function() {
             someaction(channel);
