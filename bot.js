@@ -8,8 +8,6 @@ http.createServer(function (request, response) {
 
 client.on('message', msg => {
   if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
-    //console.log(msg.author)
-    //console.log(msg.channel.name)
     addChannel(msg, msg.content, msg.content)
     msg.reply('I have created your channel: ' + msg.content)
   }
@@ -18,20 +16,13 @@ client.on('message', msg => {
 client.login(process.env.BOT_TOKEN)
 
 function someaction(channel) {
-     /** 
-    console.log("2" + channel.members);
-    console.log("3" + channel.name);
-    console.log("4" + channel.id);
-    //console.log("5" + client.channels.get(channel.id));
-     */
     var updated = client.channels.get(channel.id);
     //console.log(updated.members.map(g => g.user).length);
     var numUsers = updated.members.map(g => g.user).length
     if ( numUsers == 0 ) {
         console.log("Removing " + channel.name)
         channel.delete();
-    } else {
-        //console.log("Still a user in the channel")
+    } else { //Still a user in the channel
         setTimeout(function() {
             someaction(channel);
         }, 1000 * period);
@@ -52,9 +43,8 @@ function addChannel(message,args,eventName){
             id: message.author,
             allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
         }]
-    }).then( // Create the actual voice channel.
+    }).then(
         (chan) => {
-            //console.log(message.channel);
             var textChan = message.channel
             chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
                 (chan2) => {
@@ -66,4 +56,3 @@ function addChannel(message,args,eventName){
     ).catch(console.error);
     return '```Added```';
 }
-
