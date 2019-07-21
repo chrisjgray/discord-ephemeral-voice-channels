@@ -49,7 +49,7 @@ function addChannel(message,args,eventName){
     guild.createChannel(eventName, { 
         type: 'voice',
         permissionOverwrites: [{
-            id: guild.id,
+            id: message.author,
             'CONNECT': true,
             'VIEW_CHANNEL': true,
             'SPEAK': true,
