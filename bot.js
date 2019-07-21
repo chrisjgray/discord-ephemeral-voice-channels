@@ -1,7 +1,15 @@
+var express = require( "express" );
 var http = require('http');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const period = process.env.PERIOD;
+
+var app = express();
+
+app.get( "/", function( request, response ) {
+    // we program the server to respond with an HTML string
+    response.send( "Ok" ); 
+  } );
 
 setInterval(function() {
     http.get("http://sg-voice-bot.herokuapp.com");
