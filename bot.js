@@ -46,20 +46,21 @@ function schedule(channel) {
 
 function addChannel(message,args,eventName){
     var server = message.guild;
-    server.createChannel(eventName, 'voice').then( // Create the actual voice channel.
+    server.createChannel(eventName, { 
+        type: 'voice',
+        permissionOverwrites: [{
+            'CONNECT': true,
+            'VIEW_CHANNEL': true,
+            'SPEAK': true,
+            'CREATE_INSTANT_INVITE': true,
+            'MANAGE_CHANNELS': true
+        }]
+    }).then( // Create the actual voice channel.
         (chan) => {
             //console.log(message.channel);
             var textChan = message.channel
             chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
                 (chan2) => {
-                    chan2.overwritePermissions(message.author, {
-                       'CONNECT': true,
-                       'VIEW_CHANNEL': true,
-                       'SPEAK': true,
-                       'CREATE_INSTANT_INVITE': true,
-                       'MANAGE_CHANNELS': true
-
-                      });
                     console.log("Adding " + chan2.name);
                     schedule(chan2, server);
                 }
