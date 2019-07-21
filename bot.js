@@ -50,11 +50,7 @@ function addChannel(message,args,eventName){
         type: 'voice',
         permissionOverwrites: [{
             id: message.author,
-            'CONNECT': true,
-            'VIEW_CHANNEL': true,
-            'SPEAK': true,
-            'CREATE_INSTANT_INVITE': true,
-            'MANAGE_CHANNELS': true
+            allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
         }]
     }).then( // Create the actual voice channel.
         (chan) => {
