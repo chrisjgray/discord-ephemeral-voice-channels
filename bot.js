@@ -45,8 +45,9 @@ function schedule(channel) {
 }
 
 function addChannel(message,args,eventName){
-    var server = message.guild;
-    server.createChannel(eventName, { 
+    var guild = message.guild;
+    guild.createChannel(eventName, { 
+        id: guild.id,
         type: 'voice',
         permissionOverwrites: [{
             'CONNECT': true,
@@ -62,7 +63,7 @@ function addChannel(message,args,eventName){
             chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
                 (chan2) => {
                     console.log("Adding " + chan2.name);
-                    schedule(chan2, server);
+                    schedule(chan2, guild);
                 }
             ).catch(console.error);
         }
