@@ -47,9 +47,9 @@ function schedule(channel) {
 function addChannel(message,args,eventName){
     var guild = message.guild;
     guild.createChannel(eventName, { 
-        id: guild.id,
         type: 'voice',
         permissionOverwrites: [{
+            id: guild.id,
             'CONNECT': true,
             'VIEW_CHANNEL': true,
             'SPEAK': true,
