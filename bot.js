@@ -1,6 +1,10 @@
+var http = require('http');
 const Discord = require('discord.js')
 const client = new Discord.Client()
 const period = process.env.PERIOD
+
+http.createServer(function (request, response) {
+}).listen(process.env.PORT || 5000);
 
 client.on('message', msg => {
   if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
