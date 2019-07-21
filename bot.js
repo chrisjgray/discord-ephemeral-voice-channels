@@ -20,9 +20,12 @@ app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port)
 })
 
-setInterval(function() {
-    http.get("http://sg-voice-bot.herokuapp.com/status");
-}, 300000); // every 5 minutes (300000)
+function keepalive() {
+    setInterval(function() {
+        http.get("http://sg-voice-bot.herokuapp.com/status");
+        keepalive();
+    }, 300000); // every 5 minutes (300000)
+}
 
 
 client.on('message', msg => {
@@ -75,3 +78,5 @@ function addChannel(message,args,eventName){
     ).catch(console.error);
     return '```Added```';
 }
+
+keepalive();
