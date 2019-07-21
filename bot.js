@@ -8,8 +8,8 @@ http.createServer(function (request, response) {
 
 client.on('message', msg => {
   if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
-    console.log(msg.author)
-    console.log(msg.channel.name)
+    //console.log(msg.author)
+    //console.log(msg.channel.name)
     addChannel(msg, msg.content, msg.content)
     msg.reply('I have created your channel: ' + msg.content)
   }
@@ -28,6 +28,7 @@ function someaction(channel) {
     //console.log(updated.members.map(g => g.user).length);
     var numUsers = updated.members.map(g => g.user).length
     if ( numUsers == 0 ) {
+        console.log("Removing " + channel.name)
         channel.delete();
     } else {
         //console.log("Still a user in the channel")
@@ -62,7 +63,7 @@ function addChannel(message,args,eventName){
                        'MANAGE_CHANNELS': true
 
                       });
-                    console.log(chan2);
+                    console.log("Adding " + chan2.name);
                     schedule(chan2, server);
                 }
             ).catch(console.error);
