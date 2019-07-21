@@ -40,7 +40,13 @@ client.login(process.env.BOT_TOKEN);
 function someaction(channel) {
     var updated = client.channels.get(channel.id);
     //console.log(updated.members.map(g => g.user).length);
-    var numUsers = updated.members.map(g => g.user).length;
+    var numUsers = 0
+    try{ 
+        var numUsers = updated.members.map(g => g.user).length;
+    }
+    catch(err) {
+        console.log("Error getting members map" + err);
+    }
     if ( numUsers == 0 ) {
         console.log("Removing " + channel.name);
         try {
