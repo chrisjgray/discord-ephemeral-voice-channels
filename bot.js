@@ -39,10 +39,7 @@ function someaction(channel) {
 }
 
 function schedule(channel) {
-  console.log('Checking who is in the channel: ' + channel);
-  console.log('Process finished, waiting 5 minutes');
   setTimeout(function() {
-      console.log('Going to restart');
       someaction(channel);
   }, 1000 * period);
 }
