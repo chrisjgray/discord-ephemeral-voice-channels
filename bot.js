@@ -1,26 +1,26 @@
 var http = require('http');
-const Discord = require('discord.js')
-const client = new Discord.Client()
-const period = process.env.PERIOD
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const period = process.env.PERIOD;
 
 http.createServer(function (request, response) {
 }).listen(process.env.PORT || 5000);
 
 client.on('message', msg => {
   if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
-    addChannel(msg, msg.content, msg.content)
-    msg.reply('I have created your channel: ' + msg.content)
+    addChannel(msg, msg.content, msg.content);
+    msg.reply('I have created your channel: ' + msg.content);
   }
 })
 
-client.login(process.env.BOT_TOKEN)
+client.login(process.env.BOT_TOKEN);
 
 function someaction(channel) {
     var updated = client.channels.get(channel.id);
     //console.log(updated.members.map(g => g.user).length);
-    var numUsers = updated.members.map(g => g.user).length
+    var numUsers = updated.members.map(g => g.user).length;
     if ( numUsers == 0 ) {
-        console.log("Removing " + channel.name)
+        console.log("Removing " + channel.name);
         channel.delete();
     } else { //Still a user in the channel
         setTimeout(function() {
@@ -45,7 +45,7 @@ function addChannel(message,args,eventName){
         }]
     }).then(
         (chan) => {
-            var textChan = message.channel
+            var textChan = message.channel;
             chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
                 (chan2) => {
                     console.log("Adding " + chan2.name);
