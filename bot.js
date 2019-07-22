@@ -6,16 +6,16 @@ const period = process.env.PERIOD;
 const port = process.env.PORT || 8080;
 
 
-//user added to server
-client.on("guildMemberAdd", member => {
-    try {
-        console.log("New Member: " + member.name);
-        member.addRole(member.roles.find(role => role.name ==="Trial Member"))
-    }
-    catch(err) {
-        console.log("Error adding member to role" + err);
-    }
-})
+// //user added to server
+// client.on("guildMemberAdd", member => {
+//     try {
+//         console.log("New Member: " + member.name);
+//         member.addRole(member.roles.find(role => role.name ==="Trial Member"))
+//     }
+//     catch(err) {
+//         console.log("Error adding member to role" + err);
+//     }
+// })
 
 var app = express();
 
