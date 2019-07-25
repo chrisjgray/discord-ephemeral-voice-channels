@@ -39,31 +39,38 @@ client.on('message', msg => {
 
 client.login(process.env.BOT_TOKEN);
 
-function someaction(channel) {
-    var updated = client.channels.get(channel.id);
-    //console.log(updated.members.map(g => g.user).length);
+function removeChannel(channel) {
+    var cur_channel = client.channels.get(channel.id);
     var numUsers = 0
     try{ 
-        var numUsers = updated.members.map(g => g.user).length;
+        var numUsers = cur_channel.members.map(g => g.user).length;
     }
     catch(err) {
         console.log("Error getting members map" + err);
     }
     if ( numUsers == 0 ) {
-        console.log("Removing " + channel.name);
+        console.log("Removing " + cur_channel.name);
         try {
-            channel.delete();
+            redis_client.get(cur_channel.id, function(error, result) {
+                if (error) throw error;
+                console.log('GET result ->', result)
+                if (result === null) {
+                    console.log('channel was not made by bot')
+                } else {
+                    console.log('channel was made by bot')
+                    redis_client.del(cur_channel.id,function(err) {
+                        if(err) {
+                            throw err;
+                        }
+                    })
+                    cur_channel.delete();
+                }
+              });
         }
         catch(err) {
             console.log(err);
         }
     }
-}
-
-function schedule(channel) {
-  setTimeout(function() {
-      someaction(channel);
-  }, 1000 * period);
 }
 
 function addChannel(message,args,eventName){
@@ -85,7 +92,9 @@ function addChannel(message,args,eventName){
                         }
                     })
                     console.log("Adding " + chan2.name);
-                    schedule(chan2, guild);
+                    setTimeout(function() {
+                        removeChannel(channel);
+                    }, 1000 * period);
                 }
             ).catch(console.error);
         }
@@ -100,35 +109,6 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if(newUserChannel === undefined) { // User left the channel
-        var updated = client.channels.get(oldUserChannel.id);
-        var numUsers = 0;
-        try{ 
-            var numUsers = updated.members.map(g => g.user).length;
-        }
-        catch(err) {
-            console.log("Error getting members map" + err);
-        }
-        if ( numUsers == 0 ) {
-            try {
-                redis_client.get(oldUserChannel.id, function(error, result) {
-                    if (error) throw error;
-                    console.log('GET result ->', result)
-                    if (result === null) {
-                        console.log('channel was not made by bot')
-                    } else {
-                        console.log('channel was made by bot')
-                        redis_client.del(oldUserChannel.id,function(err) {
-                            if(err) {
-                                throw err;
-                            }
-                        })
-                        oldUserChannel.delete();
-                    }
-                  });
-            }
-            catch(err) {
-                console.log(err);
-            }
-        }
+        removeChannel(oldUserChannel)
     }
 })
