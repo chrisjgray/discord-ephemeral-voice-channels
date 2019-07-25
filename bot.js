@@ -79,7 +79,7 @@ function addChannel(message,args,eventName){
         type: 'voice',
         permissionOverwrites: [{
             id: message.author,
-            allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS', 'USE_VAD']
+            allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
         }]
     }).then(
         (chan) => {
