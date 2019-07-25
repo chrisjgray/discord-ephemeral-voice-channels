@@ -109,7 +109,6 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
             console.log("Error getting members map" + err);
         }
         if ( numUsers == 0 ) {
-            console.log("Removing " + oldUserChannel.name);
             try {
                 redis_client.get(oldUserChannel.id, function(error, result) {
                     if (error) throw error;
