@@ -93,7 +93,7 @@ function addChannel(message,args,eventName){
                     })
                     console.log("Adding " + chan2.name);
                     setTimeout(function() {
-                        removeChannel(channel);
+                        removeChannel(chan2);
                     }, 1000 * period);
                 }
             ).catch(console.error);
