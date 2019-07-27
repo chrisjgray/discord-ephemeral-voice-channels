@@ -77,7 +77,6 @@ function addChannel(message,args,eventName){
     var guild = message.guild;
     guild.createChannel(eventName, { 
         type: 'voice',
-        bitrate: 128000,
         permissionOverwrites: [{
             id: message.author,
             allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
@@ -87,6 +86,7 @@ function addChannel(message,args,eventName){
             var textChan = message.channel;
             chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
                 (chan2) => {
+                    chan2.edit({ bitrate: 128000 }).catch(console.error);
                     redis_client.set(chan2.id, 'created',function(err) {
                         if(err) {
                             throw err;
