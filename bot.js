@@ -77,9 +77,9 @@ function addChannel(message,args,eventName){
     var guild = message.guild;
     guild.createChannel(eventName, { 
         type: 'voice',
+        bitrate: 128000,
         permissionOverwrites: [{
             id: message.author,
-            bitrate: 128000,
             allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
         }]
     }).then(
