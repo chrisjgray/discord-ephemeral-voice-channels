@@ -41,34 +41,36 @@ client.login(process.env.BOT_TOKEN);
 
 function removeChannel(channel) {
     var cur_channel = client.channels.get(channel.id);
-    var numUsers = 0
-    try{ 
-        var numUsers = cur_channel.members.map(g => g.user).length;
-    }
-    catch(err) {
-        console.log("Error getting members map" + err);
-    }
-    if ( numUsers == 0 ) {
-        console.log("Removing " + cur_channel.name);
-        try {
-            redis_client.get(cur_channel.id, function(error, result) {
-                if (error) throw error;
-                console.log('GET result ->', result)
-                if (result === null) {
-                    console.log('channel was not made by bot')
-                } else {
-                    console.log('channel was made by bot')
-                    redis_client.del(cur_channel.id,function(err) {
-                        if(err) {
-                            throw err;
-                        }
-                    })
-                    cur_channel.delete();
-                }
-              });
+    if (cur_channel !== undefined) {
+        var numUsers = 0
+        try{ 
+            var numUsers = cur_channel.members.map(g => g.user).length;
         }
         catch(err) {
-            console.log(err);
+            console.log("Error getting members map" + err);
+        }
+        if ( numUsers == 0 ) {
+            console.log("Removing " + cur_channel.name);
+            try {
+                redis_client.get(cur_channel.id, function(error, result) {
+                    if (error) throw error;
+                    console.log('GET result ->', result)
+                    if (result === null) {
+                        console.log('channel was not made by bot')
+                    } else {
+                        console.log('channel was made by bot')
+                        redis_client.del(cur_channel.id,function(err) {
+                            if(err) {
+                                throw err;
+                            }
+                        })
+                        cur_channel.delete();
+                    }
+                });
+            }
+            catch(err) {
+                console.log(err);
+            }
         }
     }
 }
