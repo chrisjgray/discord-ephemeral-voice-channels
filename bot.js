@@ -123,7 +123,6 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
         renameVoiceChannel(newUserChannel);
-        removeChannel(oldUserChannel);
     }
     if (oldUserChannel !== undefined) {
         renameVoiceChannel(oldUserChannel);
