@@ -3,8 +3,9 @@
     "start": "node bot.js"
   },
   "dependencies": {
-    "express": "4.16.3",
     "discord.js": "^11.5.1",
+    "dotenv": "^8.0.0",
+    "express": "4.16.3",
     "redis": "^2.8.0"
   }
 }

@@ -29,15 +29,23 @@ function keepalive() {
     }, 300000); // every 5 minutes (300000)
 }
 
+client.login(process.env.BOT_TOKEN);
+
 
 client.on('message', msg => {
-  if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
-    addChannel(msg, msg.content, msg.content);
-    msg.reply('I have created your channel: ' + msg.content);
-  }
+    if (msg.author == client.user) { // Prevent bot from responding to its own messages
+        return
+    }
+    
+    if (msg.content.startsWith("!")) {
+        processCommand(msg)
+    }
+    if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
+        addChannel(msg, msg.content, msg.content);
+        msg.reply('I have created your channel: ' + msg.content);
+    }
 })
 
-client.login(process.env.BOT_TOKEN);
 
 function removeChannel(channel) {
     var cur_channel = client.channels.get(channel.id);
@@ -107,11 +115,83 @@ function addChannel(message,args,eventName){
 
 keepalive();
 
-
 client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
-    if(newUserChannel === undefined) { // User left the channel
-        removeChannel(oldUserChannel)
+    if (newUserChannel !== undefined) {
+        renameVoiceChannel(newUserChannel);
+        removeChannel(oldUserChannel);
+    }
+    if (oldUserChannel !== undefined) {
+        renameVoiceChannel(oldUserChannel);
+        removeChannel(oldUserChannel);
     }
 })
+
+// Code originally created by NanoDano https://www.devdungeon.com/content/javascript-discord-bot-tutorial
+function processCommand(msg) {
+    let fullCommand = msg.content.substr(1) // Remove the leading exclamation mark
+    let splitCommand = fullCommand.match(/\w+|"[^"]+"/g) // Split the message up in to pieces for each space
+    let primaryCommand = splitCommand[0] // The first word directly after the exclamation is the command
+    let arguments = splitCommand.slice(1) // All other words are arguments/parameters/options for the command
+
+    console.log("Command received: " + primaryCommand)
+    console.log("Arguments: " + arguments) // There may not be any arguments
+
+    if (primaryCommand == "sgVoiceSetup") {
+        sgVoiceSetup(arguments, msg)
+    } else if(primaryCommand == "sgVoiceRenamer") {
+        sgVoiceRenamer(arguments, msg)
+    } else if(primaryCommand == "sgRemoveVoiceRenamer") {
+        sgRemoveVoiceRenamer(arguments, msg)
+    }
+}
+
+function sgVoiceSetup(arguments, msg) {
+    msg.channel.send("Voice command available: !sgVoiceRenamer \"category\" \"Current Channel Pattern\" \"NewChannelPattern\"")
+    console.log("Guild ID: ", msg.member.guild.id, ", Registered Channel ID: ", msg.channel.id);
+     
+    redis_client.set(msg.member.guild.id, msg.channel.id,function(err) {
+        if(err) {
+            throw err;
+        }
+    }) 
+}
+
+async function sgVoiceRenamer(arguments, msg) {
+    let result = await getAsync(msg.member.guild.id);
+    if(result === msg.channel.id) {
+        var channel = msg.guild.channels.find(channel => channel.type === "category" && channel.name === arguments[1].replace(/['"]+/g, ''))
+        if(arguments.length === 4) {
+            redis_client.hmset(channel.id, 'numOfMembers', arguments[0], 'currentPattern', arguments[2].replace(/['"]+/g, ''), 'newPattern', arguments[3].replace(/['"]+/g, ''))
+        }
+    }
+}
+
+async function sgRemoveVoiceRenamer(arguments, msg) {
+    let result = await getAsync(msg.member.guild.id);
+    if(result === msg.channel.id) {
+        if(arguments.length === 1) {
+            var channel = msg.guild.channels.find(channel => channel.type === "category" && channel.name === arguments[0].replace(/['"]+/g, ''))
+            redis_client.del(channel.id);
+        }
+    }
+}
+
+async function renameVoiceChannel(channel) {
+    let x = await hgetallAsync(channel.parentID)
+    if(x) {
+        // First check if channel matches a pattern
+        let currentPattern = new RegExp(x.currentPattern, "g");
+        let newPattern = new RegExp(x.newPattern, "g");
+        if(channel.name.match(currentPattern)) {
+            if(channel.members.map(g => g.user).length > x.numOfMembers) {
+                channel.setName(channel.name.replace(currentPattern, x.newPattern))
+            }
+        } else if(channel.name.match(newPattern)) {
+            if(channel.members.map(g => g.user).length <= x.numOfMembers) {
+                channel.setName(channel.name.replace(newPattern, x.currentPattern))
+            }
+        }        
+    }
+}
