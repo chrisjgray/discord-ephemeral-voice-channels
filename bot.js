@@ -5,6 +5,9 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const period = process.env.PERIOD;
 const port = process.env.PORT || 8080;
+const {promisify} = require('util');
+const getAsync = promisify(redis_client.get).bind(redis_client);
+const hgetallAsync = promisify(redis_client.hgetall).bind(redis_client);
 const redis_client = redis.createClient(process.env.REDIS_URL);
 
 var app = express();
