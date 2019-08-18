@@ -165,7 +165,7 @@ async function createChannels (message,eventName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
-        let channame = eventName + "-temp-group"
+        let channame = "temp-" + eventName
         let textChannel = await guild.createChannel(channame, { 
             type: 'text',
             parent: message.channel.parentID,
@@ -183,12 +183,23 @@ async function createChannels (message,eventName) {
 
 async function removeChannels(channel) {
     try {
-        let x = await hgetallAsync(channel.id)
-        let cur_channel = client.channels.get(channel.id);
-        cur_channel.delete();
-        cur_channel = client.channels.get(x.textChannel);
-        cur_channel.delete();
-        redis_client.del(channel.id)
+        redis_client.hgetallAsync(channel.id, function(error, result) {
+            if (error) throw error;
+            console.log('GET result ->', result)
+            if (result === null) {
+                console.log('channel was not made by bot')
+            } else {
+                console.log('channel was made by bot')
+                redis_client.del(channel.id,function(err) {
+                    if(err) {
+                        throw err;
+                    }
+                })
+                cur_channel.delete();
+                cur_channel = client.channels.get(result.textChannel);
+                cur_channel.delete();
+            }
+        });
     } catch (error) {
         console.error(error)
     }
