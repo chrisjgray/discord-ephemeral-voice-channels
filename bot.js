@@ -100,7 +100,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
-        const generator = await hgetallAsync(voiceChannel.id)
+        const generator = hgetallAsync(voiceChannel.id)
         if (generator && generator.generator) {
             createGenChannels(newMember, newMember.voiceChannel, generator)
         } else {
