@@ -231,7 +231,10 @@ async function removeChannels(channel) {
             })
             channel.delete();
             channel = client.channels.get(x.textChannel);
-            channel.delete();
+            if(channel !== undefined) {
+                channel.delete();
+            }
+            
         }
     } catch (error) {
         console.error(error)
