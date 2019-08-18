@@ -165,8 +165,8 @@ async function createChannels (message,eventName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
-
-        let textChannel = await guild.createChannel(eventName, { 
+        let channame = eventName + "-temp-group"
+        let textChannel = await guild.createChannel(channame, { 
             type: 'text',
             parent: message.channel.parentID,
             permissionOverwrites: [{
