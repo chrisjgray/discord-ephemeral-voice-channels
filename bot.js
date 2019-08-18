@@ -132,21 +132,26 @@ async function sgRemoveVoiceRenamer(arguments, msg) {
 }
 
 async function renameVoiceChannel(channel) {
-    let x = await hgetallAsync(channel.parentID)
-    if(x) {
-        // First check if channel matches a pattern
-        let currentPattern = new RegExp(x.currentPattern, "g");
-        let newPattern = new RegExp(x.newPattern, "g");
-        if(channel.name.match(currentPattern)) {
-            if(channel.members.map(g => g.user).length > x.numOfMembers) {
-                channel.setName(channel.name.replace(currentPattern, x.newPattern))
-            }
-        } else if(channel.name.match(newPattern)) {
-            if(channel.members.map(g => g.user).length <= x.numOfMembers) {
-                channel.setName(channel.name.replace(newPattern, x.currentPattern))
-            }
-        }        
+    try{
+        let x = await hgetallAsync(channel.parentID)
+        if(x) {
+            // First check if channel matches a pattern
+            let currentPattern = new RegExp(x.currentPattern, "g");
+            let newPattern = new RegExp(x.newPattern, "g");
+            if(channel.name.match(currentPattern)) {
+                if(channel.members.map(g => g.user).length > x.numOfMembers) {
+                    channel.setName(channel.name.replace(currentPattern, x.newPattern))
+                }
+            } else if(channel.name.match(newPattern)) {
+                if(channel.members.map(g => g.user).length <= x.numOfMembers) {
+                    channel.setName(channel.name.replace(newPattern, x.currentPattern))
+                }
+            }        
+        }
+    } catch (error){
+        console.error(error)
     }
+    
 }
 
 async function createChannels (message,eventName) {
