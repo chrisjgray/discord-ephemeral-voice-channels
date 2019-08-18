@@ -101,7 +101,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
         renameVoiceChannel(newUserChannel);
-        createChannels(newMember, newUserChannel);
+        echoChannelJoined(newMember);
     }
     if (oldUserChannel !== undefined) {
         renameVoiceChannel(oldUserChannel);
