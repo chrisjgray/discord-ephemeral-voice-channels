@@ -195,9 +195,9 @@ async function removeChannels(channel) {
                         throw err;
                     }
                 })
-                cur_channel.delete();
-                cur_channel = client.channels.get(result.textChannel);
-                cur_channel.delete();
+                channel.delete();
+                channel = client.channels.get(result.textChannel);
+                channel.delete();
             }
         });
     } catch (error) {
