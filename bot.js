@@ -100,8 +100,13 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
-        renameVoiceChannel(newUserChannel);
-        echoChannelJoined(newMember);
+        const generator = await hgetallAsync(voiceChannel.id)
+        if (generator && generator.generator) {
+            createGenChannels(newMember, newMember.voiceChannel, generator)
+        } else {
+            renameVoiceChannel(newUserChannel);
+            echoChannelJoined(newMember);
+        }        
     }
     if (oldUserChannel !== undefined) {
         renameVoiceChannel(oldUserChannel);
@@ -126,11 +131,13 @@ function processCommand(msg) {
         sgVoiceRenamer(arguments, msg)
     } else if(primaryCommand == "sgRemoveVoiceRenamer") {
         sgRemoveVoiceRenamer(arguments, msg)
+    }else if(primaryCommand == "sgVoiceChannel") {
+        sgVoiceChannel(arguments, msg)
     }
 }
 
 function sgVoiceSetup(arguments, msg) {
-    msg.channel.send("Voice command available: !sgVoiceRenamer \"category\" \"Current Channel Pattern\" \"NewChannelPattern\"")
+    msg.channel.send("Voice command available: !sgVoiceRenamer MemberCount \"category\" \"Current Channel Pattern\" \"NewChannelPattern\"")
     console.log("Guild ID: ", msg.member.guild.id, ", Registered Channel ID: ", msg.channel.id);
      
     redis_client.set(msg.member.guild.id, msg.channel.id,function(err) {
@@ -156,6 +163,18 @@ async function sgRemoveVoiceRenamer(arguments, msg) {
         if(arguments.length === 1) {
             var channel = msg.guild.channels.find(channel => channel.type === "category" && channel.name === arguments[0].replace(/['"]+/g, ''))
             redis_client.del(channel.id);
+        }
+    }
+}
+
+async function sgVoiceChannel(arguments, msg) {
+    let result = await getAsync(msg.member.guild.id);
+    if(result === msg.channel.id) {
+        if(arguments.length === 2) {
+            let voiceChannel = await msg.member.guild.createChannel(arguments[0] + "🔊", { 
+                type: 'voice'
+            })
+            await redis_client.hmset(voiceChannel.id, 'generator', true, 'pattern', arguments[1].replace(/['"]+/g, ''), 'next', 1)
         }
     }
 }
@@ -195,7 +214,7 @@ async function createChannels (message,eventName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
-        let channame = "🔊" + eventName
+        let channame = "🔉" + eventName
         let textChannel = await guild.createChannel(channame, { 
             type: 'text',
             parent: message.channel.parentID,
@@ -208,6 +227,40 @@ async function createChannels (message,eventName) {
                 deny: ['VIEW_CHANNEL']
             }
             ]
+        })
+        await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
+        return voiceChannel
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function createGenChannels (member, channel, generator) { // guildid, categoryid
+    try {
+        const guild = channel.guild
+        const role_everyone = guild.roles.get(channel.guild.id)
+        let channame = generator.pattern + " " + generator.next 
+
+        // First create the voice channel
+        let voiceChannel = await guild.createChannel(channame, { 
+            type: 'voice',
+            parent: channel.parentID,
+        })
+        // Prepend the voice symbol🔊
+        channame = "🔊" + channame
+        // Add the corresponding text channel and prevent everyone else from viewing unless they are members of the voice channel
+        let textChannel = await guild.createChannel(channame, { 
+            type: 'text',
+            parent: channel.parentID,
+            permissionOverwrites: [{
+                id: member.user.id,
+                allow: ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']
+            },
+            {
+                id: role_everyone,
+                deny: ['VIEW_CHANNEL']
+            }
+        ]
         })
         await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
         return voiceChannel
