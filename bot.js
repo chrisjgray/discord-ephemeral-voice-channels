@@ -64,7 +64,6 @@ async function echoChannelJoined (member) {
 }
 
 async function echoChannelLeft (member) {
-    console.log(member);
     const channelInfo = await hgetallAsync(member.voiceChannelID)
     if (!channelInfo) return;
     const channel = member.guild.channels.find(ch => ch.id === channelInfo.textChannel);
