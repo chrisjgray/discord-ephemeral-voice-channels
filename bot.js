@@ -49,6 +49,34 @@ client.on('message', msg => {
     }
 })
 
+async function echoChannelJoined (member) {
+    const channelInfo = await hgetallAsync(member.voiceChannelID)
+    if (!channelInfo) return;
+    const channel = member.guild.channels.find(ch => ch.id === channelInfo.textChannel);
+    // Do nothing if the channel wasn't found on this server
+    if (!channel) return;
+    // Send the message, mentioning the member
+    channel.overwritePermissions(member, {
+        id: member,
+        allow: ['VIEW_CHANNEL']
+    })
+    channel.send(`${member} has joined the channel`);
+}
+
+async function echoChannelLeft (member) {
+    console.log(member);
+    const channelInfo = await hgetallAsync(member.voiceChannelID)
+    if (!channelInfo) return;
+    const channel = member.guild.channels.find(ch => ch.id === channelInfo.textChannel);
+    // Do nothing if the channel wasn't found on this server
+    if (!channel) return;
+    channel.overwritePermissions(member, {
+        id: member
+    })
+    // Send the message, mentioning the member
+    channel.send(`${member} has left the channel`);
+}
+
 
 function removeChannel(channel) {
     var cur_channel = client.channels.get(channel.id);
@@ -74,10 +102,12 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
         renameVoiceChannel(newUserChannel);
+        createChannels(newMember, newUserChannel);
     }
     if (oldUserChannel !== undefined) {
         renameVoiceChannel(oldUserChannel);
         removeChannel(oldUserChannel);
+        echoChannelLeft(oldMember);
     }
 })
 
@@ -157,6 +187,7 @@ async function renameVoiceChannel(channel) {
 async function createChannels (message,eventName) {
     try {
         const guild = message.guild;
+        const role_everyone = guild.roles.get(guild.id)
         let voiceChannel = await guild.createChannel(eventName, { 
             type: 'voice',
             parent: message.channel.parentID,
@@ -165,14 +196,19 @@ async function createChannels (message,eventName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
-        let channame = "temp-" + eventName
+        let channame = "🔊" + eventName
         let textChannel = await guild.createChannel(channame, { 
             type: 'text',
             parent: message.channel.parentID,
             permissionOverwrites: [{
                 id: message.author,
-                allow: ['MANAGE_CHANNELS']
-            }]
+                allow: ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']
+            },
+            {
+                id: role_everyone,
+                deny: ['VIEW_CHANNEL']
+            }
+            ]
         })
         await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
         return voiceChannel
