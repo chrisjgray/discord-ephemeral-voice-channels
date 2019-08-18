@@ -183,23 +183,21 @@ async function createChannels (message,eventName) {
 
 async function removeChannels(channel) {
     try {
-        redis_client.hgetallAsync(channel.id, function(error, result) {
-            if (error) throw error;
-            console.log('GET result ->', result)
-            if (result === null) {
-                console.log('channel was not made by bot')
-            } else {
-                console.log('channel was made by bot')
-                redis_client.del(channel.id,function(err) {
-                    if(err) {
-                        throw err;
-                    }
-                })
-                channel.delete();
-                channel = client.channels.get(result.textChannel);
-                channel.delete();
-            }
-        });
+        x = redis_client.hgetallAsync(channel.id)
+        console.log('GET result ->', x)
+        if (x === null) {
+            console.log('channel was not made by bot')
+        } else {
+            console.log('channel was made by bot')
+            redis_client.del(channel.id,function(err) {
+                if(err) {
+                    throw err;
+                }
+            })
+            channel.delete();
+            channel = client.channels.get(x.textChannel);
+            channel.delete();
+        }
     } catch (error) {
         console.error(error)
     }
