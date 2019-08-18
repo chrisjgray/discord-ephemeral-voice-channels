@@ -100,10 +100,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
-        const generator = hgetallAsync(newMember.voiceChannel.id)
-        if (generator && generator.generator) {
-            createGenChannels(newMember, newMember.voiceChannel, generator)
-        } else {
+        if (!generatorCheck(newMember)) {
             renameVoiceChannel(newUserChannel);
             echoChannelJoined(newMember);
         }        
@@ -114,6 +111,16 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
         echoChannelLeft(oldMember);
     }
 })
+
+async function generatorCheck(newMember) {
+    const generator = await hgetallAsync(newMember.voiceChannel.id)
+    if (generator && generator.generator) {
+        createGenChannels(newMember, newMember.voiceChannel, generator)
+        return true;
+    } else {
+        return false;
+    }
+}
 
 // Code originally created by NanoDano https://www.devdungeon.com/content/javascript-discord-bot-tutorial
 function processCommand(msg) {
