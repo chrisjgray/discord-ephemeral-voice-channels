@@ -44,7 +44,7 @@ client.on('message', msg => {
         processCommand(msg)
     }
     if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
-        addChannel(msg, msg.content, msg.content);
+        createChannels(msg, msg.content);
         msg.reply('I have created your channel: ' + msg.content);
     }
 })
@@ -62,58 +62,9 @@ function removeChannel(channel) {
         }
         if ( numUsers == 0 ) {
             console.log("Removing " + cur_channel.name);
-            try {
-                redis_client.get(cur_channel.id, function(error, result) {
-                    if (error) throw error;
-                    console.log('GET result ->', result)
-                    if (result === null) {
-                        console.log('channel was not made by bot')
-                    } else {
-                        console.log('channel was made by bot')
-                        redis_client.del(cur_channel.id,function(err) {
-                            if(err) {
-                                throw err;
-                            }
-                        })
-                        cur_channel.delete();
-                    }
-                });
-            }
-            catch(err) {
-                console.log(err);
-            }
+            removeChannels(cur_channel);
         }
     }
-}
-
-function addChannel(message,args,eventName){
-    var guild = message.guild;
-    guild.createChannel(eventName, { 
-        type: 'voice',
-        permissionOverwrites: [{
-            id: message.author,
-            allow: ['CONNECT', 'VIEW_CHANNEL', 'SPEAK', 'CREATE_INSTANT_INVITE', 'MANAGE_CHANNELS']
-        }]
-    }).then(
-        (chan) => {
-            var textChan = message.channel;
-            chan.setParent(textChan.parentID).then( // Move the voice channel to the current message's parent category.
-                (chan2) => {
-                    chan2.edit({ bitrate: 128000 }).catch(console.error);
-                    redis_client.set(chan2.id, 'created',function(err) {
-                        if(err) {
-                            throw err;
-                        }
-                    })
-                    console.log("Adding " + chan2.name);
-                    setTimeout(function() {
-                        removeChannel(chan2);
-                    }, 1000 * period);
-                }
-            ).catch(console.error);
-        }
-    ).catch(console.error);
-    return '```Added```';
 }
 
 keepalive();
@@ -195,5 +146,45 @@ async function renameVoiceChannel(channel) {
                 channel.setName(channel.name.replace(newPattern, x.currentPattern))
             }
         }        
+    }
+}
+
+async function createChannels (message,eventName) {
+    try {
+        const guild = message.guild;
+        let voiceChannel = await guild.createChannel(eventName, { 
+            type: 'voice',
+            parent: message.channel,
+            permissionOverwrites: [{
+                id: message.author,
+                allow: ['MANAGE_CHANNELS']
+            }]
+        })
+
+        let textChannel = await guild.createChannel(eventName, { 
+            type: 'text',
+            parent: message.channel,
+            permissionOverwrites: [{
+                id: message.author,
+                allow: ['MANAGE_CHANNELS']
+            }]
+        })
+        await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
+        return voiceChannel
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function removeChannels(channel) {
+    try {
+        let x = await hgetallAsync(channel.id)
+        let cur_channel = client.channels.get(channel.id);
+        cur_channel.delete();
+        cur_channel = client.channels.get(x.textChannel);
+        cur_channel.delete();
+        redis_client.del(channel.id)
+    } catch (error) {
+        console.error(error)
     }
 }
