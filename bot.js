@@ -183,7 +183,7 @@ async function createChannels (message,eventName) {
 
 async function removeChannels(channel) {
     try {
-        x = redis_client.hgetallAsync(channel.id)
+        x = await hgetallAsync(channel.id)
         console.log('GET result ->', x)
         if (x === null) {
             console.log('channel was not made by bot')
