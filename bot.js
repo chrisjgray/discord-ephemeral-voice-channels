@@ -171,7 +171,7 @@ async function sgVoiceChannel(arguments, msg) {
     let result = await getAsync(msg.member.guild.id);
     if(result === msg.channel.id) {
         if(arguments.length === 2) {
-            let voiceChannel = await msg.member.guild.createChannel(arguments[0] + "🔊", { 
+            let voiceChannel = await msg.member.guild.createChannel(arguments[0].replace(/['"]+/g, '') + "🔊", { 
                 type: 'voice'
             })
             await redis_client.hmset(voiceChannel.id, 'generator', true, 'pattern', arguments[1].replace(/['"]+/g, ''), 'next', 1)
