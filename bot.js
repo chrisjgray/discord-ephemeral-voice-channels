@@ -159,7 +159,7 @@ async function createChannels (message,eventName) {
         const guild = message.guild;
         let voiceChannel = await guild.createChannel(eventName, { 
             type: 'voice',
-            parent: message.channel,
+            parent: message.channel.parentID,
             permissionOverwrites: [{
                 id: message.author,
                 allow: ['MANAGE_CHANNELS']
@@ -168,7 +168,7 @@ async function createChannels (message,eventName) {
 
         let textChannel = await guild.createChannel(eventName, { 
             type: 'text',
-            parent: message.channel,
+            parent: message.channel.parentID,
             permissionOverwrites: [{
                 id: message.author,
                 allow: ['MANAGE_CHANNELS']
