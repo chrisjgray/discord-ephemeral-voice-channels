@@ -125,11 +125,8 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
 })
 
 async function generatorCheck(newMember) {
-    console.log("Inside the generator check")
     const gen = await hgetallAsync(newMember.voiceChannel.id)
-    console.log(gen)
     if (gen && gen.generator === 'true') {
-        console.log("passed validation")
         return gen
     } else {
         return false;
@@ -263,11 +260,10 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         if (generator.pattern === undefined) {
             return true;
         }
-        console.log("Inside createGenChannels script")
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
         let channame = generator.pattern + " " + generator.next
-        console.log("Channel name format: ", channame)
+        await redis_client.hmset(voiceChannel.id, 'generator', true, 'pattern', generator.pattern, 'next', (Number(generator.next)+1%9)+1)
 
         // First create the voice channel
         let voiceChannel = await guild.createChannel(channame, { 
