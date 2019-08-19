@@ -286,8 +286,8 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
             }
         ]
         })
-        member.setVoiceChannel(voiceChannel)
         await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
+        member.setVoiceChannel(voiceChannel)
         return voiceChannel
     } catch (error) {
         console.error(error)
@@ -308,7 +308,7 @@ async function removeChannels(channel) {
                 }
             })
             channel.delete();
-            channel = client.channels.get(x.textChannel);
+            channel = await client.channels.get(x.textChannel);
             if(channel !== undefined) {
                 channel.delete();
             }
