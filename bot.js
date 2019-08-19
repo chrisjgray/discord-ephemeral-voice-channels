@@ -128,7 +128,7 @@ async function generatorCheck(newMember) {
     console.log("Inside the generator check")
     const gen = await hgetallAsync(newMember.voiceChannel.id)
     console.log(gen)
-    if (gen && gen.generator === true) {
+    if (gen && gen.generator === 'true') {
         console.log("passed validation")
         return gen
     } else {
