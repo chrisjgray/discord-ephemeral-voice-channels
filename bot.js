@@ -263,7 +263,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
         let channame = generator.pattern + " " + generator.next
-        await redis_client.hmset(voiceChannel.id, 'generator', true, 'pattern', generator.pattern, 'next', (Number(generator.next)+1%9)+1)
+        await redis_client.hmset(channel.id, 'generator', true, 'pattern', generator.pattern, 'next', (Number(generator.next)+1%9)+1)
 
         // First create the voice channel
         let voiceChannel = await guild.createChannel(channame, { 
