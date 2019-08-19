@@ -100,31 +100,37 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
-        let generator = generatorCheck(newMember)
-        if (!generator) {
-            renameVoiceChannel(newUserChannel);
-            echoChannelJoined(newMember);
-        } else {
-            createGenChannels(newMember, newMember.voiceChannel, generator)
-        }
+        generatorCheck(newMember)
+        .then(generator => {
+            if (!generator) {
+                renameVoiceChannel(newUserChannel);
+                echoChannelJoined(newMember);
+            } else {
+                createGenChannels(newMember, newMember.voiceChannel, generator)
+            }
+        })
+        .then(console.log)
     }
     if (oldUserChannel !== undefined) {
-        let generator = generatorCheck(oldMember)
-        if (!generator) {
-            renameVoiceChannel(oldUserChannel);
-            removeChannel(oldUserChannel);
-            echoChannelLeft(oldMember);
-        }
+        generatorCheck(oldMember)
+        .then(generator => {
+            if (!generator) {
+                renameVoiceChannel(oldUserChannel);
+                removeChannel(oldUserChannel);
+                echoChannelLeft(oldMember);
+            }
+        })
+        .then(console.log)
     }
 })
 
 async function generatorCheck(newMember) {
     console.log("Inside the generator check")
-    const generator = await hgetallAsync(newMember.voiceChannel.id)
-    console.log(generator)
-    if (generator && generator.generator) {
+    const gen = await hgetallAsync(newMember.voiceChannel.id)
+    console.log(gen)
+    if (gen && gen.generator === true) {
         console.log("passed validation")
-        return generator
+        return gen
     } else {
         return false;
     }
@@ -254,6 +260,9 @@ async function createChannels (message,eventName) {
 
 async function createGenChannels (member, channel, generator) { // guildid, categoryid
     try {
+        if (generator.pattern === undefined) {
+            return true;
+        }
         console.log("Inside createGenChannels script")
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
