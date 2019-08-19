@@ -97,6 +97,12 @@ function removeChannel(channel) {
 keepalive();
 
 client.on('voiceStateUpdate', (oldMember, newMember) => {
+    if(newMember.selfMute === true) {
+        return true;
+    }
+    if(oldMember.selfMute === true) {
+        return true;
+    }
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
