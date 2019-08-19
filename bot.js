@@ -100,23 +100,31 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.voiceChannel;
     let oldUserChannel = oldMember.voiceChannel;
     if (newUserChannel !== undefined) {
-        if (!generatorCheck(newMember)) {
+        let generator = generatorCheck(newMember)
+        if (!generator) {
             renameVoiceChannel(newUserChannel);
             echoChannelJoined(newMember);
-        }        
+        } else {
+            createGenChannels(newMember, newMember.voiceChannel, generator)
+        }
     }
     if (oldUserChannel !== undefined) {
-        renameVoiceChannel(oldUserChannel);
-        removeChannel(oldUserChannel);
-        echoChannelLeft(oldMember);
+        let generator = generatorCheck(oldMember)
+        if (!generator) {
+            renameVoiceChannel(oldUserChannel);
+            removeChannel(oldUserChannel);
+            echoChannelLeft(oldMember);
+        }
     }
 })
 
 async function generatorCheck(newMember) {
+    console.log("Inside the generator check")
     const generator = await hgetallAsync(newMember.voiceChannel.id)
+    console.log(generator)
     if (generator && generator.generator) {
-        createGenChannels(newMember, newMember.voiceChannel, generator)
-        return true;
+        console.log("passed validation")
+        return generator
     } else {
         return false;
     }
@@ -175,7 +183,9 @@ async function sgRemoveVoiceRenamer(arguments, msg) {
 }
 
 async function sgVoiceChannel(arguments, msg) {
+    console.log("inside the voice channel creator");
     let result = await getAsync(msg.member.guild.id);
+    console.log(result, msg.channel.id);
     if(result === msg.channel.id) {
         if(arguments.length === 2) {
             let voiceChannel = await msg.member.guild.createChannel(arguments[0].replace(/['"]+/g, '') + "🔊", { 
@@ -244,9 +254,11 @@ async function createChannels (message,eventName) {
 
 async function createGenChannels (member, channel, generator) { // guildid, categoryid
     try {
+        console.log("Inside createGenChannels script")
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
-        let channame = generator.pattern + " " + generator.next 
+        let channame = generator.pattern + " " + generator.next
+        console.log("Channel name format: ", channame)
 
         // First create the voice channel
         let voiceChannel = await guild.createChannel(channame, { 
@@ -269,6 +281,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
             }
         ]
         })
+        member.setVoiceChannel(voiceChannel)
         await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
         return voiceChannel
     } catch (error) {
