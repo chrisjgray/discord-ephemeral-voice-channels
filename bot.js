@@ -296,21 +296,23 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
 
 async function removeChannels(channel) {
     try {
-        x = await hgetallAsync(channel.id)
+        let x = await hgetallAsync(channel.id)
         console.log('GET result ->', x)
         if (x === null) {
             console.log('channel was not made by bot')
         } else {
             console.log('channel was made by bot')
-            redis_client.del(channel.id,function(err) {
+            await redis_client.del(channel.id,function(err) {
                 if(err) {
                     throw err;
                 }
             })
-            channel.delete();
-            channel = await client.channels.get(x.textChannel);
-            if(channel !== undefined) {
-                channel.delete();
+            await channel.delete();
+            console.log("deleted voice channel")
+            tchannel = await client.channels.get(x.textChannel);
+            if(tchannel !== undefined) {
+                console.log("Deleting text channel")
+                await tchannel.delete();
             }
             
         }
