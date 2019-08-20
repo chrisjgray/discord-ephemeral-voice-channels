@@ -60,7 +60,7 @@ async function echoChannelJoined (member) {
         id: member,
         allow: ['VIEW_CHANNEL']
     })
-    channel.send(`${member} has joined the channel`);
+    channel.send(`${member.user.username} has joined the channel`);
 }
 
 async function echoChannelLeft (member) {
@@ -73,7 +73,7 @@ async function echoChannelLeft (member) {
         id: member
     })
     // Send the message, mentioning the member
-    channel.send(`${member} has left the channel`);
+    channel.send(`${member.user.username} has left the channel`);
 }
 
 
