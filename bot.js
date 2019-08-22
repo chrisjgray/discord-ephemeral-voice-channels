@@ -58,7 +58,7 @@ async function echoChannelJoined (member) {
     // Send the message, mentioning the member
     channel.overwritePermissions(member, {
         id: member,
-        allow: ['VIEW_CHANNEL']
+        allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'EMBED_LINKS']
     })
     let username = member.nickname === null ? member.user.username : member.nickname
     channel.send(`${username} has joined the channel`);
