@@ -75,7 +75,7 @@ client.on('voiceStateUpdate', async (oldMember, newMember) => {
             // Try to rename if there is a pattern
             renameVoiceChannel(newMember.voiceChannel);
             // Check if there are at least 2 members in the channel 
-            let voiceChannel = await newChannel.guild.channels.get(newChannel.voiceChannelID)
+            let voiceChannel = await newMember.guild.channels.get(newMember.voiceChannelID)
             if(Array.from(voiceChannel.members.keys()).length >= 2) {
                 await createTextChannel(voiceChannel);
                 // Let people know someone joined the channel
