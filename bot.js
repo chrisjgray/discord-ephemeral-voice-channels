@@ -163,6 +163,10 @@ function removeChannel(channel) {
 
 // Give a Voice Channel
 async function createTextChannel(voiceChannel) {
+    let textChannel = await hgetallAsync(voiceChannel.id);
+    if(textChannel.textChannel !== null) {
+        return;
+    }
     // Prepend the voice symbol🔊
     channelName = "🔊" + voiceChannel.name
 
