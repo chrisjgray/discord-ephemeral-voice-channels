@@ -173,6 +173,7 @@ async function createTextChannel(voiceChannel) {
     channelName = "🔊" + voiceChannel.name
 
     // Create permissions block
+    const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
     let perm = {
         allow: ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']
     }
@@ -181,7 +182,8 @@ async function createTextChannel(voiceChannel) {
     const role_everyone = await voiceChannel.guild.roles.get(voiceChannel.guild.id)
     let permissionOverwriteArray = []
     for (var i=0; i< keys.length; i++) {
-        let tempPerm = perm;
+        let tempPerm = new Object();
+        tempPerm.allow = allow;
         tempPerm.id = keys[i];
         permissionOverwriteArray.push(tempPerm);
     }
