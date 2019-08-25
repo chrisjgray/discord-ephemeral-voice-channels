@@ -26,8 +26,12 @@ app.listen(port, function() {
 
 function keepalive() {
     setInterval(function() {
-        http.get("http://sg-voice-bot.herokuapp.com/status");
-        keepalive();
+        try{
+            http.get("http://sg-voice-bot.herokuapp.com/status");
+            keepalive();
+        } catch(err) {
+            console.log("Error in keepalive" + err);
+        }
     }, 300000); // every 5 minutes (300000)
 }
 
@@ -52,7 +56,12 @@ client.on('message', msg => {
     }
 })
 
-keepalive();
+try{
+    keepalive();
+} catch(err) {
+    console.log("Error in keepalive" + err);
+}
+
 
 
 // Events when someone joins or leaves a voice channel
