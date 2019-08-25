@@ -174,9 +174,6 @@ async function createTextChannel(voiceChannel) {
 
     // Create permissions block
     const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
-    let perm = {
-        allow: ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']
-    }
     let keys = await Array.from(voiceChannel.members.keys())
     console.log(keys);
     const role_everyone = await voiceChannel.guild.roles.get(voiceChannel.guild.id)
