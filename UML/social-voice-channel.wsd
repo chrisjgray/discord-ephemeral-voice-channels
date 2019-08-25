@@ -1,0 +1,7 @@
+@startuml
+title voice-comms🔊
+User -> "voice-comms🔊" : message
+"voice-comms🔊" -> Bot : message event
+Bot -> createChannels
+Bot -> "voice-comms🔊" : Message to User: I have created your channel: User
+@enduml
