@@ -173,7 +173,7 @@ async function createTextChannel(voiceChannel) {
     channelName = "🔊" + voiceChannel.name
 
     // Create permissions block
-    const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
+    const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES'];
     let keys = await Array.from(voiceChannel.members.keys())
     const role_everyone = await voiceChannel.guild.roles.get(voiceChannel.guild.id)
     let permissionOverwriteArray = []
