@@ -1,7 +1,7 @@
 var express = require( "express" );
 var http = require('http');
 var redis = require('redis');
-let commands = require('/commands')
+let commands = require('./commands')
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const port = process.env.PORT || 8080;
