@@ -1,3 +1,4 @@
+const {promisify} = require('util');
 var redis = require('redis');
 const redis_client = redis.createClient(process.env.REDIS_URL);
 const getAsync = promisify(redis_client.get).bind(redis_client);
