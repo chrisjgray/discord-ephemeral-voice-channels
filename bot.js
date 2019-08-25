@@ -186,7 +186,7 @@ async function createTextChannel(voiceChannel) {
         id: role_everyone,
         deny: ['VIEW_CHANNEL']
     })
-
+    console.log(permissionOverwriteArray);
     // Add the corresponding text channel and prevent everyone else from viewing unless they are members of the voice channel
     let textChannel = await voiceChannel.guild.createChannel(channelName, { 
         type: 'text',
