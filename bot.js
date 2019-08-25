@@ -186,7 +186,7 @@ async function createTextChannel(voiceChannel) {
     // Add the corresponding text channel and prevent everyone else from viewing unless they are members of the voice channel
     let textChannel = await voiceChannel.guild.createChannel(channelName, { 
         type: 'text',
-        parent: parentID, //channel.parentID,
+        parent: voiceChannel.parentID, //channel.parentID,
         permissionOverwrites: permissionOverwriteArray
     })
     await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
