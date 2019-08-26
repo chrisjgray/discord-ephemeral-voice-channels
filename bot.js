@@ -240,6 +240,7 @@ async function createChannelsFromText (message,channelName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
+        await redis_client.hmset(voiceChannel.id)
         let channame = "🔉" + channelName
         return voiceChannel
     } catch (error) {
@@ -262,6 +263,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
             type: 'voice',
             parent: channel.parentID,
         })
+        await redis_client.hmset(voiceChannel.id)
         member.setVoiceChannel(voiceChannel)
         return voiceChannel
     } catch (error) {
