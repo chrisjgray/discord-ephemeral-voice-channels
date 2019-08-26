@@ -247,6 +247,7 @@ async function renameVoiceChannel(channel) {
 async function createChannelsFromText (message,channelName) {
     try {
         // check for rate limit
+        console.log("Checking user for rate limit: ", message.author.id)
         if (rateLimitCheck(message.author.id)) {
             return;
         }
@@ -275,6 +276,7 @@ async function createChannelsFromText (message,channelName) {
 
 async function rateLimitCheck(memberID) {
     let ratelimituser = await getAsync(memberID);
+    console.log("MemberID: ", memberID, " Redis response: ", ratelimituser)
     if (ratelimituser !== null) {
         return true;
     } else {
