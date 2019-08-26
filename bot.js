@@ -202,7 +202,8 @@ async function createTextChannel(voiceChannel) {
         parent: voiceChannel.parentID, //channel.parentID,
         permissionOverwrites: permissionOverwriteArray
     })
-    await redis_client.hmset(voiceChannel.id, 'textChannel', textChannel.id)
+    textChan.textChannel = textChannel.id
+    await redis_client.hmset(voiceChannel.id, textChan)
 }
 
 async function renameVoiceChannel(channel) {
@@ -240,7 +241,10 @@ async function createChannelsFromText (message,channelName) {
                 allow: ['MANAGE_CHANNELS']
             }]
         })
-        await redis_client.hmset(voiceChannel.id, 'name', voiceChannel.name)
+        await redis_client.hmset(voiceChannel.id, {
+            'name': voiceChannel.name,
+            'ownedbybot': true
+        })
         let channame = "🔉" + channelName
         return voiceChannel
     } catch (error) {
@@ -256,14 +260,19 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
         let channame = generator.pattern + " " + generator.next
-        await redis_client.hmset(channel.id, 'generator', true, 'pattern', generator.pattern, 'next', (Number(generator.next)%9)+1)
+        generator.next = (Number(generator.next)%9)+1
+        generator.ownedbybot = true
+        await redis_client.hmset(channel.id, generator)
 
         // First create the voice channel
         let voiceChannel = await guild.createChannel(channame, { 
             type: 'voice',
             parent: channel.parentID,
         })
-        await redis_client.hmset(voiceChannel.id, 'name', voiceChannel.name)
+        await redis_client.hmset(voiceChannel.id, {
+            'name': voiceChannel.name,
+            'ownedbybot': true
+        })
         member.setVoiceChannel(voiceChannel)
         return voiceChannel
     } catch (error) {
@@ -276,8 +285,24 @@ async function removeChannels(channel) {
         let x = await hgetallAsync(channel.id)
         console.log('GET result ->', x)
         if (x === null) {
-            console.log('channel was not made by bot')
-        } else {
+            console.log(channel.name, ': was not made by bot')
+        } else if (x.ownedbybot !== true) {
+            console.log(channel.name, ': was not made by bot')
+            if(x.textChannel !== null) {
+                console.log("removing text channel");
+                tchannel = await client.channels.get(x.textChannel);
+                if(tchannel !== undefined) {
+                    console.log("Deleting text channel")
+                    await tchannel.delete();
+                }
+                console.log("Removing from redis: ", x)
+                await redis_client.del(channel.id,function(err) {
+                    if(err) {
+                        throw err;
+                    }
+                })
+            }
+        }else {
             console.log('channel was made by bot')
             await redis_client.del(channel.id,function(err) {
                 if(err) {

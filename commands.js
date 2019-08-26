@@ -66,7 +66,11 @@ async function sgVoiceSetup(msg) {
 async function sgVoiceRenamer(arguments, msg) {
     if(arguments.length === 4) {
         var channel = await msg.guild.channels.find(channel => channel.type === "category" && channel.name === arguments[1].replace(/['"]+/g, ''))
-        await redis_client.hmset(channel.id, 'numOfMembers', arguments[0], 'currentPattern', arguments[2].replace(/['"]+/g, ''), 'newPattern', arguments[3].replace(/['"]+/g, ''))
+        await redis_client.hmset(channel.id, {
+            'numOfMembers': arguments[0], 
+            'currentPattern': arguments[2].replace(/['"]+/g, ''), 
+            'newPattern': arguments[3].replace(/['"]+/g, '')
+        })
     }
 }
 
@@ -85,6 +89,11 @@ async function sgVoiceChannel(arguments, msg) {
         let voiceChannel = await msg.member.guild.createChannel(arguments[0].replace(/['"]+/g, '') + "🔊", { 
             type: 'voice'
         })
-        await redis_client.hmset(voiceChannel.id, 'generator', true, 'pattern', arguments[1].replace(/['"]+/g, ''), 'next', 1)
+        await redis_client.hmset(voiceChannel.id, {
+            'generator': true, 
+            'pattern': arguments[1].replace(/['"]+/g, ''), 
+            'next': 1,
+            'ownedbybot': true
+        })
     }
 }
