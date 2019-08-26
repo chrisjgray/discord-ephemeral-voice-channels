@@ -175,7 +175,7 @@ function removeChannel(channel) {
 // Give a Voice Channel
 async function createTextChannel(voiceChannel) {
     let textChan = await hgetallAsync(voiceChannel.id);
-    console.log("Creating a text channel for: " voiceChannel.name)
+    console.log("Creating a text channel for: ", voiceChannel.name)
     // Skip quiet time channel
     if(voiceChannel.name === 'Quiet Time/AFK') {
         return;
