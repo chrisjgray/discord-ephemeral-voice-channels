@@ -248,9 +248,10 @@ async function createChannelsFromText (message,channelName) {
     try {
         // check for rate limit
         console.log("Checking user for rate limit: ", message.author.id)
-        if (rateLimitCheck(message.author.id)) {
+        if (await rateLimitCheck(message.author.id)) {
             return;
         }
+        console.log("Got past the rate limit check")
         const guild = message.guild;
         const role_everyone = guild.roles.get(guild.id)
         let voiceChannel = await guild.createChannel(channelName, { 
@@ -266,7 +267,7 @@ async function createChannelsFromText (message,channelName) {
             'ownedbybot': true
         })
         let channame = "🔉" + channelName
-        await redis_client.set(message.author.id, 'true', 'EX', 15)
+        await redis_client.set(message.author.id, 'true', 'EX', 15);
         message.reply('I have created your channel: ' + msg.content);
         return voiceChannel
     } catch (error) {
@@ -291,7 +292,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         }
 
         // check for rate limit
-        if (rateLimitCheck(member.id)) {
+        if (await rateLimitCheck(member.id)) {
             return;
         }
 
