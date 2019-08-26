@@ -177,6 +177,10 @@ async function createTextChannel(voiceChannel) {
         if(textChan.textChannel !== null) {
             return;
         }
+    } else {
+        textChan = new Object();
+        textChan.ownedbybot = false;
+        textChan.name = voiceChannel.name;
     }
     // Prepend the voice symbol🔊
     channelName = "🔊" + voiceChannel.name
