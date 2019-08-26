@@ -173,6 +173,7 @@ function removeChannel(channel) {
 // Give a Voice Channel
 async function createTextChannel(voiceChannel) {
     let textChan = await hgetallAsync(voiceChannel.id);
+    console.log("Creating a text channel: ", textChan)
     if(textChan !== null) {
         if(textChan.textChannel !== null) {
             return;
