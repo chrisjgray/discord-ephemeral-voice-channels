@@ -301,7 +301,7 @@ async function removeChannels(channel) {
         } else if (x.ownedbybot !== 'true') {
             console.log(channel.name, ': was not made by bot')
             console.log(x)
-            if(x.textChannel !== null) {
+            if(x.textChannel !== undefined) {
                 console.log("removing text channel");
                 tchannel = await client.channels.get(x.textChannel);
                 if(tchannel !== undefined) {
