@@ -292,7 +292,7 @@ async function removeChannels(channel) {
         console.log('GET result ->', x)
         if (x === null) {
             console.log(channel.name, ': was not made by bot')
-        } else if (x.ownedbybot !== true) {
+        } else if (x.ownedbybot !== 'true') {
             console.log(channel.name, ': was not made by bot')
             console.log(x)
             if(x.textChannel !== null) {
