@@ -8,6 +8,7 @@ const port = process.env.PORT || 8080;
 const {promisify} = require('util');
 const redis_client = redis.createClient(process.env.REDIS_URL);
 const hgetallAsync = promisify(redis_client.hgetall).bind(redis_client);
+const getAsync = promisify(redis_client.get).bind(redis_client);
 
 var app = express();
 
@@ -272,6 +273,13 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         if (generator.pattern === undefined) {
             return;
         }
+
+        // check for rate limit
+        let ratelimituser = await getAsync(member.id);
+        if (ratelimituser !== null) {
+            return;
+        }
+
         const guild = channel.guild
         const role_everyone = guild.roles.get(channel.guild.id)
         let channame = generator.pattern + " " + generator.next
@@ -289,6 +297,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
             'ownedbybot': true
         })
         member.setVoiceChannel(voiceChannel)
+        await redis_client.set(member.id, member.name, 'EX', 15)
         return voiceChannel
     } catch (error) {
         console.error(error)
