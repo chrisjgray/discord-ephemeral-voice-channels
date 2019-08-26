@@ -268,7 +268,7 @@ async function createChannelsFromText (message,channelName) {
         })
         let channame = "🔉" + channelName
         await redis_client.set(message.author.id, 'true', 'EX', 15);
-        message.reply('I have created your channel: ' + msg.content);
+        message.reply('I have created your channel: ' + message.content);
         return voiceChannel
     } catch (error) {
         console.error(error)
