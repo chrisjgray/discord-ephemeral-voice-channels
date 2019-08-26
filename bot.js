@@ -247,7 +247,7 @@ async function renameVoiceChannel(channel) {
 async function createChannelsFromText (message,channelName) {
     try {
         // check for rate limit
-        if (rateLimitCheck(message.author)) {
+        if (rateLimitCheck(message.author.id)) {
             return;
         }
         const guild = message.guild;
@@ -265,7 +265,7 @@ async function createChannelsFromText (message,channelName) {
             'ownedbybot': true
         })
         let channame = "🔉" + channelName
-        await redis_client.set(message.author, 'true', 'EX', 15)
+        await redis_client.set(message.author.id, 'true', 'EX', 15)
         message.reply('I have created your channel: ' + msg.content);
         return voiceChannel
     } catch (error) {
