@@ -84,8 +84,10 @@ client.on('voiceStateUpdate', async (oldMember, newMember) => {
             // Try to rename if there is a pattern
             renameVoiceChannel(newMember.voiceChannel);
             // Check if there are at least 2 members in the channel 
+            console.log("Preparing to check if we need to add a text channel")
             let voiceChannel = await newMember.guild.channels.get(newMember.voiceChannelID)
             if(Array.from(voiceChannel.members.keys()).length >= 2) {
+                console.log("Yep need to make a text channel")
                 await createTextChannel(voiceChannel);
                 // Let people know someone joined the channel
                 await echoChannelJoined(newMember);
@@ -219,7 +221,7 @@ async function createTextChannel(voiceChannel) {
 async function renameVoiceChannel(channel) {
     try{
         let x = await hgetallAsync(channel.parentID)
-        if(x) {
+        if(x && x.ownedbybot === 'true') {
             // First check if channel matches a pattern
             let currentPattern = new RegExp(x.currentPattern, "g");
             let newPattern = new RegExp(x.newPattern, "g");
