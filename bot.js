@@ -297,7 +297,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
             'ownedbybot': true
         })
         member.setVoiceChannel(voiceChannel)
-        await redis_client.set(member.id, member.name, 'EX', 15)
+        await redis_client.set(member.id, member.username, 'EX', 15)
         return voiceChannel
     } catch (error) {
         console.error(error)
