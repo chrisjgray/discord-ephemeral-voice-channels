@@ -175,7 +175,7 @@ function removeChannel(channel) {
 // Give a Voice Channel
 async function createTextChannel(voiceChannel) {
     let textChan = await hgetallAsync(voiceChannel.id);
-    console.log("Creating a text channel: ", textChan)
+    console.log("Creating a text channel for: " voiceChannel.name)
     // Skip quiet time channel
     if(voiceChannel.name === 'Quiet Time/AFK') {
         return;
@@ -210,7 +210,6 @@ async function createTextChannel(voiceChannel) {
         id: role_everyone,
         deny: ['VIEW_CHANNEL']
     })
-    console.log('Permissions array created: ', permissionOverwriteArray)
     // Add the corresponding text channel and prevent everyone else from viewing unless they are members of the voice channel
     let textChannel = await voiceChannel.guild.createChannel(channelName, { 
         type: 'text',
