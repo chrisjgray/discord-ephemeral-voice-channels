@@ -207,6 +207,7 @@ async function createTextChannel(voiceChannel) {
         permissionOverwrites: permissionOverwriteArray
     })
     textChan.textChannel = textChannel.id
+    console.log("Created textChannel: ", textChan)
     await redis_client.hmset(voiceChannel.id, textChan)
 }
 
