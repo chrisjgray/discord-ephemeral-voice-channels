@@ -53,7 +53,6 @@ client.on('message', msg => {
     // Run the Create Channel from Text function for voice-comms🔊
     if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
         createChannelsFromText(msg, msg.content);
-        msg.reply('I have created your channel: ' + msg.content);
     }
 })
 
@@ -247,6 +246,10 @@ async function renameVoiceChannel(channel) {
 
 async function createChannelsFromText (message,channelName) {
     try {
+        // check for rate limit
+        if (rateLimitCheck(message.author)) {
+            return;
+        }
         const guild = message.guild;
         const role_everyone = guild.roles.get(guild.id)
         let voiceChannel = await guild.createChannel(channelName, { 
@@ -262,9 +265,20 @@ async function createChannelsFromText (message,channelName) {
             'ownedbybot': true
         })
         let channame = "🔉" + channelName
+        await redis_client.set(message.author, 'true', 'EX', 15)
+        message.reply('I have created your channel: ' + msg.content);
         return voiceChannel
     } catch (error) {
         console.error(error)
+    }
+}
+
+async function rateLimitCheck(memberID) {
+    let ratelimituser = await getAsync(memberID);
+    if (ratelimituser !== null) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -275,8 +289,7 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
         }
 
         // check for rate limit
-        let ratelimituser = await getAsync(member.id);
-        if (ratelimituser !== null) {
+        if (rateLimitCheck(member.id)) {
             return;
         }
 
