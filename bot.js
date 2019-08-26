@@ -176,15 +176,18 @@ async function createTextChannel(voiceChannel) {
     console.log("Creating a text channel: ", textChan)
     if(textChan !== null) {
         if(textChan.textChannel !== null) {
+            console.log("Exiting create channel process as textChannel already exists")
             return;
         }
     } else {
+        console.log("No voice channel owned by bot so making a new text channel redis object")
         textChan = new Object();
         textChan.ownedbybot = false;
         textChan.name = voiceChannel.name;
     }
     // Prepend the voice symbol🔊
     channelName = "🔊" + voiceChannel.name
+    console.log("The new text channel name is: ", channelName)
 
     // Create permissions block
     const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES'];
