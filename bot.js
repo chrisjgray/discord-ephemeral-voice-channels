@@ -177,7 +177,7 @@ async function createTextChannel(voiceChannel) {
     let textChan = await hgetallAsync(voiceChannel.id);
     console.log("Creating a text channel: ", textChan)
     if(textChan !== null) {
-        if(textChan.textChannel !== null) {
+        if(textChan.textChannel !== undefined) {
             console.log("Exiting create channel process as textChannel already exists")
             return;
         }
