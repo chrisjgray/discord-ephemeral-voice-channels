@@ -78,7 +78,7 @@ client.on('voiceStateUpdate', async (oldMember, newMember) => {
         // 2. voiceChannel - text driven voice channel
         let generator = await generatorCheck(newMember.voiceChannel.id)
         if (generator) {
-            console.log("Creating a new generator channel for: newMember.voiceChannel")
+            console.log("Creating a new generator channel for: ", generator.pattern)
             createGenChannels(newMember, newMember.voiceChannel, generator)
         } else {
             // Try to rename if there is a pattern
