@@ -251,7 +251,6 @@ async function createChannelsFromText (message,channelName) {
         if (await rateLimitCheck(message.author.id)) {
             return;
         }
-        console.log("Got past the rate limit check")
         const guild = message.guild;
         const role_everyone = guild.roles.get(guild.id)
         let voiceChannel = await guild.createChannel(channelName, { 
