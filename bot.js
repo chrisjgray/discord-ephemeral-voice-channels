@@ -224,7 +224,7 @@ async function createTextChannel(voiceChannel) {
 async function renameVoiceChannel(channel) {
     try{
         let x = await hgetallAsync(channel.parentID)
-        if(x && x.ownedbybot === 'true') {
+        if(x) {
             // First check if channel matches a pattern
             let currentPattern = new RegExp(x.currentPattern, "g");
             let newPattern = new RegExp(x.newPattern, "g");
