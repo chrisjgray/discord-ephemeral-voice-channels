@@ -175,7 +175,7 @@ async function echoChannelLeft (voiceState) {
 function removeChannel(cur_channel) {
     console.log("removeChannel")
     //var cur_channel = client.channels.cache.get(channel.id);
-    console.log(cur_channel)
+    // console.log(cur_channel)
     if (cur_channel !== undefined) {
         var numUsers = 0
         try{ 
