@@ -1,6 +1,8 @@
 var express = require( "express" );
 var http = require('http');
 var redis = require('redis');
+const dotenv = require('dotenv');
+dotenv.config();
 let commands = require('./commands')
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -52,6 +54,7 @@ client.on('message', msg => {
 
     // Run the Create Channel from Text function for voice-comms🔊
     if (msg.channel.name === process.env.CHANNEL && msg.author.bot != true) {
+        // print(msg)
         createChannelsFromText(msg, msg.content);
     }
 })
@@ -65,45 +68,51 @@ try{
 
 
 // Events when someone joins or leaves a voice channel
-client.on('voiceStateUpdate', async (oldMember, newMember) => {
+client.on('voiceStateUpdate', async (oldState, newState) => {
+    console.log("There was a voice state update")
+    // console.log(newState)
     // Ignore when a user is testing their mike
-    if(newMember.selfMute === true || oldMember.selfMute === true) {
+    if(newState.selfMute === true || oldState.selfMute === true) {
         return true;
     }
     
     // User has joined a voice channel
-    if (newMember.voiceChannel !== undefined) {
+    if (newState.channelID !== null) {
+        console.log("User has joined a voice channel")
         // Types of Voice channels today
         // 1. Generator. Generator == a channel that creates a new voice channel based on a pattern
         // 2. voiceChannel - text driven voice channel
-        let generator = await generatorCheck(newMember.voiceChannel.id)
+        let generator = await generatorCheck(newState.channelID)
         if (generator) {
             console.log("Creating a new generator channel for: ", generator.pattern)
-            createGenChannels(newMember, newMember.voiceChannel, generator)
+            createGenChannels(newState, generator)
         } else {
+            let voiceChannel = await newState.guild.channels.cache.get(newState.channelID)
             // Try to rename if there is a pattern
-            renameVoiceChannel(newMember.voiceChannel);
+            renameVoiceChannel(voiceChannel);
             // Check if there are at least 2 members in the channel 
             console.log("Preparing to check if we need to add a text channel")
-            let voiceChannel = await newMember.guild.channels.get(newMember.voiceChannelID)
             if(Array.from(voiceChannel.members.keys()).length >= 2) {
                 console.log("Yep need to make a text channel")
                 await createTextChannel(voiceChannel);
                 // Let people know someone joined the channel
-                await echoChannelJoined(newMember);
+                await echoChannelJoined(newState);
             }
         }
     }
 
     // User has left a channel
-    if (oldMember.voiceChannel !== undefined) {
-        let generator = await generatorCheck(oldMember.voiceChannel.id)
+    if (oldState.channelID !== null && oldState.channelID !== undefined) {
+        console.log("user has left a channel")
+        // console.log(oldState.channelID)
+        let generator = await generatorCheck(oldState.channelID)
         if (!generator) {
-            renameVoiceChannel(oldMember.voiceChannel);
-            let channelRemoved = await removeChannel(oldMember.voiceChannel);
+            let oldVoiceChannel = await oldState.guild.channels.cache.get(oldState.channelID)
+            renameVoiceChannel(oldVoiceChannel);
+            let channelRemoved = await removeChannel(oldVoiceChannel);
             // If the channel was removed, no need to echo
             if (!channelRemoved) {
-                echoChannelLeft(oldMember);
+                echoChannelLeft(oldState);
             }
         }
     }
@@ -119,45 +128,59 @@ async function generatorCheck(voiceChannelID) {
 }
 
 
-async function echoChannelJoined (member) {
-    const channelInfo = await hgetallAsync(member.voiceChannelID)
+async function echoChannelJoined (voiceState) {
+    console.log("echo Channel Joined")
+    // console.log(voiceState)
+    const channelInfo = await hgetallAsync(voiceState.channelID)
     if (!channelInfo) return;
-    const channel = member.guild.channels.find(ch => ch.id === channelInfo.textChannel);
+    const channel = voiceState.guild.channels.cache.find(ch => ch.id === channelInfo.textChannel);
     // Do nothing if the channel wasn't found on this server
     if (!channel) return;
     // Send the message, mentioning the member
-    channel.overwritePermissions(member, {
+    channel.createOverwrite(voiceState.id, {
         VIEW_CHANNEL: true,
         SEND_MESSAGES: true,
         ATTACH_FILES: true,
         READ_MESSAGE_HISTORY: true,
         EMBED_LINKS: true
     })
-    let username = member.nickname === null ? member.user.username : member.nickname
+    let user = voiceState.guild.members.cache.get(voiceState.id)
+    // console.log(user)
+    //let username = voiceState.nickname === null ? voiceState.user.username : voiceState.nickname
+    let username = user.nickname === null ? user.user.username : user.nickname
     channel.send(`${username} has joined the channel`);
 }
 
-async function echoChannelLeft (member) {
-    const channelInfo = await hgetallAsync(member.voiceChannelID)
+async function echoChannelLeft (voiceState) {
+    console.log("Echo channel left")
+    // console.log(voiceState)
+    const channelInfo = await hgetallAsync(voiceState.channelID)
     if (!channelInfo) return;
-    const channel = member.guild.channels.find(ch => ch.id === channelInfo.textChannel);
+    // console.log(channelInfo)
+    const channel = voiceState.guild.channels.cache.find(ch => ch.id === channelInfo.textChannel);
     // Do nothing if the channel wasn't found on this server
     if (!channel) return;
-    channel.overwritePermissions(member, {
-        id: member
+    channel.createOverwrite(voiceState.id, {
+        id: voiceState.id
     })
+    let user = voiceState.guild.members.cache.get(voiceState.id)
+    // console.log(user)
+    let username = user.nickname === null ? user.user.username : user.nickname
     // Send the message, mentioning the member
-    let username = member.nickname === null ? member.user.username : member.nickname
+    //let username = voiceState.nickname === null ? voiceState.user.username : voiceState.nickname
     channel.send(`${username} has left the channel`);
 }
 
 
-function removeChannel(channel) {
-    var cur_channel = client.channels.get(channel.id);
+function removeChannel(cur_channel) {
+    console.log("removeChannel")
+    //var cur_channel = client.channels.cache.get(channel.id);
+    console.log(cur_channel)
     if (cur_channel !== undefined) {
         var numUsers = 0
         try{ 
             var numUsers = cur_channel.members.map(g => g.user).length;
+            console.log(numUsers)
         }
         catch(err) {
             console.log("Error getting members map" + err);
@@ -174,6 +197,7 @@ function removeChannel(channel) {
 
 // Give a Voice Channel
 async function createTextChannel(voiceChannel) {
+    console.log("Create text channel")
     let textChan = await hgetallAsync(voiceChannel.id);
     console.log("Creating a text channel for: ", voiceChannel.name)
     // Skip quiet time channel
@@ -198,7 +222,7 @@ async function createTextChannel(voiceChannel) {
     // Create permissions block
     const allow = ['MANAGE_CHANNELS', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES'];
     let keys = await Array.from(voiceChannel.members.keys())
-    const role_everyone = await voiceChannel.guild.roles.get(voiceChannel.guild.id)
+    const role_everyone = await voiceChannel.guild.roles.cache.get(voiceChannel.guild.id)
     let permissionOverwriteArray = []
     for (var i=0; i< keys.length; i++) {
         let tempPerm = new Object();
@@ -210,8 +234,9 @@ async function createTextChannel(voiceChannel) {
         id: role_everyone,
         deny: ['VIEW_CHANNEL']
     })
+
     // Add the corresponding text channel and prevent everyone else from viewing unless they are members of the voice channel
-    let textChannel = await voiceChannel.guild.createChannel(channelName, { 
+    let textChannel = await voiceChannel.guild.channels.create(channelName, { 
         type: 'text',
         parent: voiceChannel.parentID, //channel.parentID,
         permissionOverwrites: permissionOverwriteArray
@@ -223,6 +248,7 @@ async function createTextChannel(voiceChannel) {
 
 async function renameVoiceChannel(channel) {
     try{
+        console.log("rename voice channel start")
         let x = await hgetallAsync(channel.parentID)
         if(x) {
             // First check if channel matches a pattern
@@ -249,11 +275,13 @@ async function createChannelsFromText (message,channelName) {
         // check for rate limit
         console.log("Checking user for rate limit: ", message.author.id)
         if (await rateLimitCheck(message.author.id)) {
+            console.log("User hit rate limit")
             return;
         }
-        const guild = message.guild;
-        const role_everyone = guild.roles.get(guild.id)
-        let voiceChannel = await guild.createChannel(channelName, { 
+        // console.log(message)
+        const guild = message.channel.guild;
+        const role_everyone = guild.roles.cache.get(guild.id)
+        let voiceChannel = await guild.channels.create(channelName, { 
             type: 'voice',
             parent: message.channel.parentID,
             permissionOverwrites: [{
@@ -284,35 +312,35 @@ async function rateLimitCheck(memberID) {
     }
 }
 
-async function createGenChannels (member, channel, generator) { // guildid, categoryid
+async function createGenChannels (voiceState, generator) { // guildid, categoryid
     try {
         if (generator.pattern === undefined) {
             return;
         }
 
         // check for rate limit
-        if (await rateLimitCheck(member.id)) {
+        if (await rateLimitCheck(voiceState.id)) {
+            console.log("User hit rate limit")
             return;
         }
-
-        const guild = channel.guild
-        const role_everyone = guild.roles.get(channel.guild.id)
+        const currentChannel = voiceState.guild.channels.cache.get(voiceState.channelID)
+        const role_everyone = voiceState.guild.roles.cache.get(voiceState.guild.id)
         let channame = generator.pattern + " " + generator.next
         generator.next = (Number(generator.next)%9)+1
         generator.ownedbybot = true
-        await redis_client.hmset(channel.id, generator)
+        await redis_client.hmset(voiceState.channelID, generator)
 
         // First create the voice channel
-        let voiceChannel = await guild.createChannel(channame, { 
+        let voiceChannel = await voiceState.guild.channels.create(channame, { 
             type: 'voice',
-            parent: channel.parentID,
+            parent: currentChannel.parentID,
         })
         await redis_client.hmset(voiceChannel.id, {
             'name': voiceChannel.name,
             'ownedbybot': true
         })
-        member.setVoiceChannel(voiceChannel)
-        await redis_client.set(member.id, 'true', 'EX', 15)
+        voiceState.setChannel(voiceChannel)
+        await redis_client.set(voiceState.id, 'true', 'EX', 15)
         return voiceChannel
     } catch (error) {
         console.error(error)
@@ -321,6 +349,8 @@ async function createGenChannels (member, channel, generator) { // guildid, cate
 
 async function removeChannels(channel) {
     try {
+        console.log("Remove channel")
+        // console.log(channel)
         let x = await hgetallAsync(channel.id)
         console.log('GET result ->', x)
         if (x === null) {
@@ -330,7 +360,7 @@ async function removeChannels(channel) {
             console.log(x)
             if(x.textChannel !== undefined) {
                 console.log("removing text channel");
-                tchannel = await client.channels.get(x.textChannel);
+                tchannel = await client.channels.cache.get(x.textChannel);
                 if(tchannel !== undefined) {
                     console.log("Deleting text channel")
                     await tchannel.delete();
@@ -351,7 +381,7 @@ async function removeChannels(channel) {
             })
             await channel.delete();
             console.log("deleted voice channel")
-            tchannel = await client.channels.get(x.textChannel);
+            tchannel = await client.channels.cache.get(x.textChannel);
             if(tchannel !== undefined) {
                 console.log("Deleting text channel")
                 await tchannel.delete();

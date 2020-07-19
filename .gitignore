@@ -62,3 +62,5 @@ typings/
 
 # Ignore the test directory for local code tests
 test/
+voiceChannels.txt
+test.js
